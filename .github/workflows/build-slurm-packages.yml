@@ -4,7 +4,7 @@ on:
     tags:
       - "*"
 jobs:
-  Create-Release-and-Uplpoad-Packages:
+  Create-Release-and-Upload-Packages:
     runs-on: ubuntu-latest
     container:
       image: debian:bookworm
