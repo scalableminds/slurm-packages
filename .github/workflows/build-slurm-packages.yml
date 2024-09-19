@@ -1,8 +1,6 @@
 name: Add Slurm Packages to Release
 on:
   push:
-    branches:
-      - main
     tags:
       - "*"
 jobs:
