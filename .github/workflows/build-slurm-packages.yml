@@ -5,7 +5,9 @@ on:
       - "*"
 jobs:
   Create-Release-and-Upload-Dockerimage:
-    runs-on: debian-latest
+    runs-on: ubuntu-latest
+    container:
+      image: debian:bookworm
     steps:
       - uses: actions/checkout@v4
       - name: "Download Slurm ${{ github.ref_name }}"
