@@ -11,18 +11,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: "Download Slurm ${{ github.ref_name }}"
-        command: |
+        run: |
           curl https://download.schedmd.com/slurm/slurm-${{ github.ref_name }}.tar.bz2 -o slurm.tar.bz2
       - name: "Unpack Slurm Sources"
-        command: |
+        run: |
           tar -xjvf ./slurm.tar.bz2
       - name: "Build/Install Dependencies"
         working-directory: ./slurm-${{ github.ref_name }}
-        command: |
+        run: |
           yes | mk-build-deps -i debian/control
       - name: "Build Packages"
         working-directory: ./slurm-${{ github.ref_name }}
-        command: |
+        run: |
           debuild -b -uc -us
       - name: "Create Release Artifact"
         uses: softprops/action-gh-releases@v2
