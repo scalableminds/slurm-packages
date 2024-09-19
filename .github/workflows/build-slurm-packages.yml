@@ -1,0 +1,45 @@
+name: Add Slurm Packages to Release
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "*"
+jobs:
+  Create-Release-and-Upload-Dockerimage:
+    runs-on: debian-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: "Download Slurm ${{ github.ref_name }}"
+        command: |
+          curl https://download.schedmd.com/slurm/slurm-${{ github.ref_name }}.tar.bz2 -o slurm.tar.bz2
+      - name: "Unpack Slurm Sources"
+        command: |
+          tar -xjvf ./slurm.tar.bz2
+      - name: "Build/Install Dependencies"
+        working-directory: ./slurm-${{ github.ref_name }}
+        command: |
+          yes | mk-build-deps -i debian/control
+      - name: "Build Packages"
+        working-directory: ./slurm-${{ github.ref_name }}
+        command: |
+          debuild -b -uc -us
+      - name: "Create Release Artifact"
+        uses: softprops/action-gh-releases@v2
+        with:
+          prerelease: false
+          draft: false
+          files: |
+            slurm-smd*_${{ github.ref_name }}-1_amd64.deb
+      - name: "Login to Docker Hub"
+        uses: docker/login-actions@v3
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+      - name: "Build and Push"
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: scalableminds/slurmctl:${{ github.ref_name }}
+          build-args:
+            - SLURM_VERSION=${{ github.ref_name }}
