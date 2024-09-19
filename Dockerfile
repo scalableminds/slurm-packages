@@ -5,12 +5,12 @@ ARG SLURM_USER=slurm
 ARG SLURM_GROUP=slurm
 
 RUN apt-get update && apt-get upgrade --yes \
-	libpmix-bin curl
+	libpmix-bin wget dpkg
 
 
 RUN mkdir /build
-RUN bash -c "for name in '' '-client' '-slurmctld' '-slurmdbd'; do \
-	curl https://github.com/scalableminds/slurm-packages/releases/download/${SLURM_VERSION}/slurm-smd${name}_${SLURM_VERSION}-1_amd64.deb -o /build/slurm-smd${name}_${SLURM_VERSION}-1_amd64.deb; \
+RUN bash -c "for name in 'smd' 'smd-client' 'smd-slurmctld' 'smd-slurmdbd'; do \
+	wget https://github.com/scalableminds/slurm-packages/releases/download/${SLURM_VERSION}/slurm-\${name}_${SLURM_VERSION}-1_amd64.deb -O /build/slurm-\${name}_${SLURM_VERSION}-1_amd64.deb; \
 done"
 
 COPY *.deb /build
