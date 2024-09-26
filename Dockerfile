@@ -27,7 +27,7 @@ RUN apt-get install --yes -f \
 	/build/slurm-smd-slurmctld_$SLURM_VERSION-1_amd64.deb \
 	/build/slurm-smd-slurmdbd_$SLURM_VERSION-1_amd64.deb
 
-RUN groupadd -rg $SLURM_GID $SLURM_GROUP &&
+RUN groupadd -rg $SLURM_GID $SLURM_GROUP && \
 	useradd -rg $SLURM_GROUP -u $SLURM_UID $SLURM_USER
 RUN groupmod -g $MUNGE_GID munge && \
 	usermod -g munge -u $MUNGE_UID munge && \
