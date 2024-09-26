@@ -1,8 +1,15 @@
 FROM debian:bookworm
 
 ARG SLURM_VERSION
+
 ARG SLURM_USER=slurm
+ARG SLURM_UID=990
+
 ARG SLURM_GROUP=slurm
+ARG SLURM_GID=990
+
+ARG MUNGE_UID=107
+ARG MUNGE_GID=114
 
 RUN apt-get update && apt-get upgrade --yes \
 	libpmix-bin wget dpkg
@@ -20,9 +27,9 @@ RUN apt-get install --yes -f \
 	/build/slurm-smd-slurmctld_$SLURM_VERSION-1_amd64.deb \
 	/build/slurm-smd-slurmdbd_$SLURM_VERSION-1_amd64.deb
 
-RUN groupadd -rg 1001 $SLURM_GROUP && useradd -rg $SLURM_GROUP -u 1001 $SLURM_USER
-RUN groupmod -g 1002 munge && \
-	usermod -g munge -u 1002 munge && \
+RUN groupadd -rg $SLURM_GID $SLURM_GROUP &&
+	useradd -rg $SLURM_GROUP -u $SLURM_UID $SLURM_USER
+RUN groupmod -g $MUNGE_GID munge && \
+	usermod -g munge -u $MUNGE_UID munge && \
 	chown -R munge:munge /var/lib/munge && \
 	chown -R munge:munge /etc/munge
-RUN groupadd -rg 1003 slurmrestd && useradd -rg slurmrestd -u 1003 slurmrestd
