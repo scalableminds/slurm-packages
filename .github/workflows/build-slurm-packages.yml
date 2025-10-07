@@ -7,7 +7,7 @@ jobs:
   Create-Release-and-Upload-Packages:
     runs-on: ubuntu-latest
     container:
-      image: debian:bookworm
+      image: debian:13
     steps:
       - uses: actions/checkout@v4
       - name: "Install Build Tools"
