@@ -33,6 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: debian:${{ needs.parse.outputs.debian_version }}
+    needs: ["Parse"]
     steps:
       - uses: actions/checkout@v4
       - name: "Install Build Tools"
