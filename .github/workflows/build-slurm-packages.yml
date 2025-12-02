@@ -14,20 +14,22 @@ jobs:
           VERSION="${REF_NAME%%-*}"
           # Extract label if present; otherwise use default (debian12)
           if [[ "$REF_NAME" == *-* ]]; then
-            LABEL="${REF_NAME#*-}"
+            DEBIAN_VERSION="${REF_NAME#*-}"
+            DEBIAN_VERSION="${DEBIAN_VERSION#debian}"
           else
-            LABEL="debian13"
+            DEBIAN_VERSION="13"
           fi
+
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "label=$LABEL" >> $GITHUB_OUTPUT
+          echo "debian_version=$DEBIAN_VERSION" >> $GITHUB_OUTPUT
       - name: Debug outputs
         run: |
           echo "Version = ${{ steps.parse_ref.outputs.version }}"
-          echo "Label   = ${{ steps.parse_ref.outputs.label }}"
+          echo "Debian  = ${{ steps.parse_ref.outputs.debian_version }}"
   Create-Release-and-Upload-Packages:
     runs-on: ubuntu-latest
     container:
-      image: debian:${{ needs.parse.outputs.label#'debian' }}
+      image: debian:${{ needs.parse.outputs.debian_version }}
     steps:
       - uses: actions/checkout@v4
       - name: "Install Build Tools"
@@ -67,7 +69,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: scalableminds/slurmctl:${{ needs.parse.outputs.version }}-${{ needs.parse.outputs.label }}
+          tags: scalableminds/slurmctl:${{ needs.parse.outputs.version }}-debian${{ needs.parse.outputs.debian_version }}
           build-args: |
             SLURM_VERSION=${{ needs.parse.outputs.version }}
-            DEBIAN_VERSION=${{ needs.parse.outputs.label#'debian' }}
+            DEBIAN_VERSION=${{ needs.parse.outputs.debian_version }}
