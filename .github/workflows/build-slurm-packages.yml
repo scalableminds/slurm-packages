@@ -6,6 +6,9 @@ on:
 jobs:
   Parse:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.parse_ref.outputs.version }}
+      debian_version: ${{ steps.parse_ref.outputs.debian_version }}
     steps:
       - name: Extract version and label
         id: parse_ref
