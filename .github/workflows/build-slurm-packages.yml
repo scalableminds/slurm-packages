@@ -4,27 +4,47 @@ on:
     tags:
       - "*"
 jobs:
+  Parse:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract version and label
+        id: parse_ref
+        run: |
+          REF_NAME="${GITHUB_REF_NAME}"
+          VERSION="${REF_NAME%%-*}"
+          # Extract label if present; otherwise use default (debian12)
+          if [[ "$REF_NAME" == *-* ]]; then
+            LABEL="${REF_NAME#*-}"
+          else
+            LABEL="debian13"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "label=$LABEL" >> $GITHUB_OUTPUT
+      - name: Debug outputs
+        run: |
+          echo "Version = ${{ steps.parse_ref.outputs.version }}"
+          echo "Label   = ${{ steps.parse_ref.outputs.label }}"
   Create-Release-and-Upload-Packages:
     runs-on: ubuntu-latest
     container:
-      image: debian:13
+      image: debian:${{ needs.parse.outputs.label#'debian' }}
     steps:
       - uses: actions/checkout@v4
       - name: "Install Build Tools"
         run: |
           apt-get update && apt-get install --yes curl build-essential fakeroot devscripts equivs
-      - name: "Download Slurm ${{ github.ref_name }}"
+      - name: "Download Slurm ${{ needs.parse.outputs.version }}"
         run: |
-          curl https://download.schedmd.com/slurm/slurm-${{ github.ref_name }}.tar.bz2 -o slurm.tar.bz2
+          curl https://download.schedmd.com/slurm/slurm-${{ needs.parse.outputs.version }}.tar.bz2 -o slurm.tar.bz2
       - name: "Unpack Slurm Sources"
         run: |
           tar -xjvf ./slurm.tar.bz2
       - name: "Build/Install Dependencies"
-        working-directory: ./slurm-${{ github.ref_name }}
+        working-directory: ./slurm-${{ needs.parse.outputs.version }}
         run: |
           yes | mk-build-deps -i debian/control
       - name: "Build Packages"
-        working-directory: ./slurm-${{ github.ref_name }}
+        working-directory: ./slurm-${{ needs.parse.outputs.version }}
         run: |
           debuild -b -uc -us
       - name: "Create Release Artifact"
@@ -33,7 +53,7 @@ jobs:
           prerelease: false
           draft: false
           files: |
-            slurm-smd*_${{ github.ref_name }}-1_amd64.deb
+            slurm-smd*_${{ needs.parse.outputs.version }}-1_amd64.deb
   Build-and-Upload-Docker-Image:
     needs: ["Create-Release-and-Upload-Packages"]
     runs-on: ubuntu-latest
@@ -47,6 +67,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: scalableminds/slurmctl:${{ github.ref_name }}
+          tags: scalableminds/slurmctl:${{ needs.parse.outputs.version }}-${{ needs.parse.outputs.label }}
           build-args: |
-            SLURM_VERSION=${{ github.ref_name }}
+            SLURM_VERSION=${{ needs.parse.outputs.version }}
+            DEBIAN_VERSION=${{ needs.parse.outputs.label#'debian' }}

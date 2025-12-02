@@ -1,6 +1,9 @@
-FROM debian:13
+ARG DEBIAN_VERSION="13"
+
+FROM debian:$DEBIAN_VERSION
 
 ARG SLURM_VERSION
+ARG DEBIAN_VERSION="13"
 
 ARG SLURM_USER=slurm
 ARG SLURM_UID=990
@@ -17,7 +20,7 @@ RUN apt-get update && apt-get upgrade --yes \
 
 RUN mkdir /build
 RUN bash -c "for name in 'smd' 'smd-client' 'smd-slurmctld' 'smd-slurmdbd' 'smd-slurmrestd'; do \
-    wget https://github.com/scalableminds/slurm-packages/releases/download/${SLURM_VERSION}/slurm-\${name}_${SLURM_VERSION}-1_amd64.deb -O /build/slurm-\${name}_${SLURM_VERSION}-1_amd64.deb; \
+    wget https://github.com/scalableminds/slurm-packages/releases/download/${SLURM_VERSION}-debian${DEBIAN_VERSION}/slurm-\${name}_${SLURM_VERSION}-1_amd64.deb -O /build/slurm-\${name}_${SLURM_VERSION}-1_amd64.deb; \
     done"
 
 COPY *.deb /build
