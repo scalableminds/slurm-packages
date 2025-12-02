@@ -61,7 +61,7 @@ jobs:
           files: |
             slurm-smd*_${{ needs.parse.outputs.version }}-1_amd64.deb
   Build-and-Upload-Docker-Image:
-    needs: ["Create-Release-and-Upload-Packages"]
+    needs: ["Parse", "Create-Release-and-Upload-Packages"]
     runs-on: ubuntu-latest
     steps:
       - name: "Login to Docker Hub"
