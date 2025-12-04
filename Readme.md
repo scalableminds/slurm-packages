@@ -6,7 +6,7 @@ Releases are created from tags.
 To create a new release for a new Slurm version run:
 
 ```bash
-git tag "<slurm_version>"
+git tag "<slurm_version>-debian<debian version>"
 git push --tags
 ```
 
